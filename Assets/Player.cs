@@ -1,17 +1,24 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
 
+[RequireComponent(typeof(Rigidbody))]
 public class Player : MonoBehaviour
 {
-    [Header("Movement")]
+    public Weapon weapon;
+
+    [Header("Movimiento")]
     public float moveSpeed = 5f;
     private Vector2 moveInput;
 
-    [Header("Jump")]
+    [Header("Rotación con mouse")]
+    public Camera mainCamera;
+    public LayerMask groundMask;
+
+    [Header("Salto")]
     public float jumpForce = 5f;
     private bool isJumping = false;
 
-    [Header("Crouch")]
+    [Header("Agacharse")]
     public float crouchScale = 0.5f;
     private Vector3 originalScale;
     private bool isCrouching = false;
@@ -55,11 +62,26 @@ public class Player : MonoBehaviour
     {
         if (context.performed)
         {
-            Ray ray = Camera.main.ScreenPointToRay(Mouse.current.position.ReadValue());
-            if (Physics.Raycast(ray, out RaycastHit hit))
-            {
-                Debug.Log("Atacaste a: " + hit.collider.name);
+            weapon.Shoot();
+        }
+    }
 
+    void Update()
+    {
+        // Rotar hacia donde está el mouse
+        Ray ray = mainCamera.ScreenPointToRay(Mouse.current.position.ReadValue());
+
+        if (Physics.Raycast(ray, out RaycastHit hit, 100f, groundMask))
+        {
+            Vector3 lookPoint = hit.point;
+            lookPoint.y = transform.position.y;
+
+            Vector3 direction = lookPoint - transform.position;
+
+            if (direction.magnitude > 0.1f)
+            {
+                Quaternion lookRotation = Quaternion.LookRotation(direction.normalized);
+                transform.rotation = Quaternion.Slerp(transform.rotation, lookRotation, Time.deltaTime * 15f);
             }
         }
     }
