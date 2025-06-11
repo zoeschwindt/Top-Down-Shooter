@@ -11,12 +11,19 @@ public class Enemy : MonoBehaviour
     public float distanciaMinimaAlJugador = 2f;
     public float tiempoDeChequeo = 0.5f;
 
+    [Header("Disparo")]
+    public GameObject proyectilPrefab;      // Prefab del proyectil
+    public Transform puntoDisparo;          // Desde dónde sale el disparo
+    public float distanciaDeDisparo = 8f;
+    public float tiempoEntreDisparos = 1.5f;
+
     private NavMeshAgent agente;
+    private float tiempoUltimoDisparo;
 
     void Start()
     {
         agente = GetComponent<NavMeshAgent>();
-        agente.updateRotation = true; // Asegura que el agente rote al moverse
+        agente.updateRotation = true;
         StartCoroutine(RevisarDistancia());
     }
 
@@ -30,15 +37,15 @@ public class Enemy : MonoBehaviour
 
                 if (distancia <= distanciaParaPerseguir && distancia > distanciaMinimaAlJugador)
                 {
-                    agente.SetDestination(objetivo.position); // Lo persigue
+                    agente.SetDestination(objetivo.position);
                 }
                 else
                 {
-                    agente.ResetPath(); // Se detiene
+                    agente.ResetPath();
 
-                    // Mira al jugador
+                    // Mira al jugador cuando está cerca
                     Vector3 direccion = (objetivo.position - transform.position).normalized;
-                    direccion.y = 0; // No mirar arriba/abajo
+                    direccion.y = 0;
 
                     if (direccion != Vector3.zero)
                     {
@@ -46,9 +53,32 @@ public class Enemy : MonoBehaviour
                         transform.rotation = Quaternion.Slerp(transform.rotation, rotacion, Time.deltaTime * 5f);
                     }
                 }
+
+                // Disparar si está dentro del rango de disparo y fuera del mínimo
+                if (distancia <= distanciaDeDisparo && distancia > distanciaMinimaAlJugador)
+                {
+                    if (Time.time >= tiempoUltimoDisparo)
+                    {
+                        Disparar();
+                        tiempoUltimoDisparo = Time.time + tiempoEntreDisparos;
+                    }
+                }
             }
 
             yield return new WaitForSeconds(tiempoDeChequeo);
+        }
+    }
+
+    void Disparar()
+    {
+        if (proyectilPrefab != null && puntoDisparo != null)
+        {
+            GameObject proyectil = Instantiate(proyectilPrefab, puntoDisparo.position, puntoDisparo.rotation);
+            Rigidbody rb = proyectil.GetComponent<Rigidbody>();
+            if (rb != null)
+            {
+                rb.linearVelocity = puntoDisparo.forward * 50f; // Velocidad del proyectil
+            }
         }
     }
 }
