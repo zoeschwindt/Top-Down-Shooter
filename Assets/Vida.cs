@@ -8,5 +8,7 @@ public class Vida : MonoBehaviour
         if (Camera.main != null)
             transform.LookAt(Camera.main.transform);
     }
+ 
+
 }
 

@@ -7,12 +7,31 @@ public class VidaEnemigo : MonoBehaviour
     public float vidaMaxima = 100f;
     private float vidaActual;
 
+    [Header("Daño recibido")]
+    public float dañoRecibidoPorBala = 20f;
+
     [Header("UI")]
-    public Image barraVida; // asignar la imagen de relleno (BarraVida)
+    public GameObject barraVidaPrefab;
+    public Transform puntoBarraVida;
+
+    private Image barraVida;
+    private GameObject instanciaBarra;
 
     void Start()
     {
         vidaActual = vidaMaxima;
+
+        if (barraVidaPrefab != null && puntoBarraVida != null)
+        {
+            instanciaBarra = Instantiate(barraVidaPrefab, puntoBarraVida.position, Quaternion.identity, puntoBarraVida);
+
+            // ?? Cambio importante aquí:
+            barraVida = instanciaBarra.transform.Find("HealthFill")?.GetComponent<Image>();
+
+            if (barraVida == null)
+                Debug.LogWarning("No se encontró el componente Image llamado 'HealthFill'");
+        }
+
         ActualizarBarra();
     }
 
@@ -37,7 +56,10 @@ public class VidaEnemigo : MonoBehaviour
 
     void Morir()
     {
-        // Acá podés agregar animación, efectos, destrucción, etc.
+        if (GameManager.instancia != null)
+            GameManager.instancia.SumarPuntoEnemigo();
+
+        Destroy(instanciaBarra);
         Destroy(gameObject);
     }
 }
