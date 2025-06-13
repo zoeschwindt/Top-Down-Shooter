@@ -6,15 +6,15 @@ using UnityEngine.AI;
 public class Enemy : MonoBehaviour
 {
     [Header("Parámetros desde el Inspector")]
-    public Transform objetivo;              // Jugador (se asigna desde el Inspector)
-    public float distanciaParaPerseguir = 10f;
+    public Transform objetivo;
+    public float distanciaParaPerseguir = 40f; // AJUSTADO a 40
     public float distanciaMinimaAlJugador = 2f;
     public float tiempoDeChequeo = 0.5f;
 
     [Header("Disparo")]
-    public GameObject proyectilPrefab;      // Prefab del proyectil
-    public Transform puntoDisparo;          // Desde dónde sale el disparo
-    public float distanciaDeDisparo = 8f;
+    public GameObject proyectilPrefab;
+    public Transform puntoDisparo;
+    public Transform puntoDisparoSecundario;
     public float tiempoEntreDisparos = 1.5f;
 
     private NavMeshAgent agente;
@@ -35,6 +35,7 @@ public class Enemy : MonoBehaviour
             {
                 float distancia = Vector3.Distance(transform.position, objetivo.position);
 
+                // Movimiento solo si está dentro del rango de persecución y fuera del rango mínimo
                 if (distancia <= distanciaParaPerseguir && distancia > distanciaMinimaAlJugador)
                 {
                     agente.SetDestination(objetivo.position);
@@ -42,20 +43,20 @@ public class Enemy : MonoBehaviour
                 else
                 {
                     agente.ResetPath();
-
-                    // Mira al jugador cuando está cerca
-                    Vector3 direccion = (objetivo.position - transform.position).normalized;
-                    direccion.y = 0;
-
-                    if (direccion != Vector3.zero)
-                    {
-                        Quaternion rotacion = Quaternion.LookRotation(direccion);
-                        transform.rotation = Quaternion.Slerp(transform.rotation, rotacion, Time.deltaTime * 5f);
-                    }
                 }
 
-                // Disparar si está dentro del rango de disparo y fuera del mínimo
-                if (distancia <= distanciaDeDisparo && distancia > distanciaMinimaAlJugador)
+                // Siempre mira al jugador si hay uno asignado
+                Vector3 direccion = (objetivo.position - transform.position).normalized;
+                direccion.y = 0;
+
+                if (direccion != Vector3.zero)
+                {
+                    Quaternion rotacion = Quaternion.LookRotation(direccion);
+                    transform.rotation = Quaternion.Slerp(transform.rotation, rotacion, Time.deltaTime * 40f);
+                }
+
+                // Disparar solo si está dentro del rango de persecución y fuera del mínimo
+                if (distancia <= distanciaParaPerseguir && distancia > distanciaMinimaAlJugador)
                 {
                     if (Time.time >= tiempoUltimoDisparo)
                     {
@@ -71,13 +72,28 @@ public class Enemy : MonoBehaviour
 
     void Disparar()
     {
-        if (proyectilPrefab != null && puntoDisparo != null)
+        if (proyectilPrefab != null)
         {
-            GameObject proyectil = Instantiate(proyectilPrefab, puntoDisparo.position, puntoDisparo.rotation);
-            Rigidbody rb = proyectil.GetComponent<Rigidbody>();
-            if (rb != null)
+            // Primer punto de disparo
+            if (puntoDisparo != null)
             {
-                rb.linearVelocity = puntoDisparo.forward * 50f; // Velocidad del proyectil
+                GameObject proyectil1 = Instantiate(proyectilPrefab, puntoDisparo.position, puntoDisparo.rotation);
+                Rigidbody rb1 = proyectil1.GetComponent<Rigidbody>();
+                if (rb1 != null)
+                {
+                    rb1.linearVelocity = puntoDisparo.forward * 50f; 
+                }
+            }
+
+            // Segundo punto de disparo
+            if (puntoDisparoSecundario != null)
+            {
+                GameObject proyectil2 = Instantiate(proyectilPrefab, puntoDisparoSecundario.position, puntoDisparoSecundario.rotation);
+                Rigidbody rb2 = proyectil2.GetComponent<Rigidbody>();
+                if (rb2 != null)
+                {
+                    rb2.linearVelocity = puntoDisparoSecundario.forward * 50f; 
+                }
             }
         }
     }

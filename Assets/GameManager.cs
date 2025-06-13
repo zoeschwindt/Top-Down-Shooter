@@ -16,6 +16,9 @@ public class GameManager : MonoBehaviour
     public GameObject panelRojo;
     public GameObject panelGanaste;
 
+    public AudioSource audioSource;
+   
+
     private void Awake()
     {
         if (instancia == null) instancia = this;
@@ -24,6 +27,8 @@ public class GameManager : MonoBehaviour
 
     private void Start()
     {
+        Time.timeScale = 1f; 
+
         if (panelRojo != null) panelRojo.SetActive(false);
         if (panelGanaste != null) panelGanaste.SetActive(false);
 
@@ -68,6 +73,8 @@ public class GameManager : MonoBehaviour
     void MostrarPanelGanaste()
     {
         if (panelGanaste != null) panelGanaste.SetActive(true);
+
+
         Time.timeScale = 0f;
     }
 }

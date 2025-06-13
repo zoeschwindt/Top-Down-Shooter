@@ -17,6 +17,10 @@ public class VidaEnemigo : MonoBehaviour
     private Image barraVida;
     private GameObject instanciaBarra;
 
+    [Header("Sonido")]
+    public AudioClip sonidoMuerte;
+    private AudioSource audioSource;
+
     void Start()
     {
         vidaActual = vidaMaxima;
@@ -24,13 +28,16 @@ public class VidaEnemigo : MonoBehaviour
         if (barraVidaPrefab != null && puntoBarraVida != null)
         {
             instanciaBarra = Instantiate(barraVidaPrefab, puntoBarraVida.position, Quaternion.identity, puntoBarraVida);
-
-            // ?? Cambio importante aquí:
             barraVida = instanciaBarra.transform.Find("HealthFill")?.GetComponent<Image>();
 
             if (barraVida == null)
                 Debug.LogWarning("No se encontró el componente Image llamado 'HealthFill'");
         }
+
+        
+        audioSource = GetComponent<AudioSource>();
+        if (audioSource == null)
+            audioSource = gameObject.AddComponent<AudioSource>();
 
         ActualizarBarra();
     }
@@ -59,7 +66,17 @@ public class VidaEnemigo : MonoBehaviour
         if (GameManager.instancia != null)
             GameManager.instancia.SumarPuntoEnemigo();
 
+        // Reproducir sonido desde un objeto temporal
+        if (sonidoMuerte != null)
+        {
+            GameObject tempAudio = new GameObject("SonidoMuerte");
+            AudioSource tempSource = tempAudio.AddComponent<AudioSource>();
+            tempSource.clip = sonidoMuerte;
+            tempSource.Play();
+            Destroy(tempAudio, sonidoMuerte.length);  // destruimos el objeto de sonido después
+        }
+
         Destroy(instanciaBarra);
-        Destroy(gameObject);
+        Destroy(gameObject);  // destruir al enemigo inmediatamente
     }
 }

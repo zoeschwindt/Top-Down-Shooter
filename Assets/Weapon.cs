@@ -4,7 +4,19 @@ public class Weapon : MonoBehaviour
 {
     public GameObject bulletPrefab;
     public Transform firePoint;
-    public float bulletSpeed = 20f;
+    public float bulletSpeed = 30f;
+
+    
+    public AudioClip sonidoDisparo;
+    private AudioSource audioSource;
+
+    void Start()
+    {
+     
+        audioSource = GetComponent<AudioSource>();
+        if (audioSource == null)
+            audioSource = gameObject.AddComponent<AudioSource>();
+    }
 
     public void Shoot()
     {
@@ -12,7 +24,13 @@ public class Weapon : MonoBehaviour
         Rigidbody rb = bullet.GetComponent<Rigidbody>();
         if (rb != null)
         {
-            rb.linearVelocity = firePoint.forward * bulletSpeed;
+            rb.linearVelocity = firePoint.forward * bulletSpeed;  
+        }
+
+       
+        if (sonidoDisparo != null)
+        {
+            audioSource.PlayOneShot(sonidoDisparo);
         }
     }
 }

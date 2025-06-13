@@ -24,11 +24,13 @@ public class Player : MonoBehaviour
     private bool isCrouching = false;
 
     private Rigidbody rb;
+    private Animator animator; //  referencia al Animator
 
     void Awake()
     {
         rb = GetComponent<Rigidbody>();
         originalScale = transform.localScale;
+        animator = GetComponent<Animator>(); // inicializamos el Animator
     }
 
     public void OnMove(InputAction.CallbackContext context)
@@ -60,6 +62,8 @@ public class Player : MonoBehaviour
 
     public void OnAttack(InputAction.CallbackContext context)
     {
+        
+
         if (context.performed)
         {
             weapon.Shoot();
@@ -91,7 +95,7 @@ public class Player : MonoBehaviour
         Vector3 move = new Vector3(moveInput.x, 0, moveInput.y) * moveSpeed;
         move.y = rb.linearVelocity.y;
         rb.linearVelocity = move;
-
+        
         if (isJumping)
         {
             rb.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);

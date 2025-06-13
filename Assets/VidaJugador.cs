@@ -7,7 +7,11 @@ public class VidaJugador : MonoBehaviour
     private int vidaActual;
 
     public Image barraVida;
-    public GameObject panelPerdiste;  // Referencia al panel de "Perdiste"
+    public GameObject panelPerdiste;
+
+    
+    public AudioClip sonidoDaño;
+    private AudioSource audioSource;
 
     void Start()
     {
@@ -15,21 +19,31 @@ public class VidaJugador : MonoBehaviour
         ActualizarBarra();
 
         if (panelPerdiste != null)
-            panelPerdiste.SetActive(false);  // Asegurarse que el panel esté oculto al inicio
+            panelPerdiste.SetActive(false);
+
+        // ?? Inicializar el AudioSource
+        audioSource = GetComponent<AudioSource>();
+        if (audioSource == null)
+            audioSource = gameObject.AddComponent<AudioSource>();
     }
 
     public void RecibirDaño(int cantidad)
     {
         vidaActual -= cantidad;
+
+        // ?? Reproducir sonido de daño
+        if (sonidoDaño != null && audioSource != null)
+            audioSource.PlayOneShot(sonidoDaño);
+
         if (vidaActual <= 0)
         {
             vidaActual = 0;
             Morir();
         }
+
         ActualizarBarra();
     }
 
-    // MÉTODO NUEVO para sumar vida
     public void RecibirVida(int cantidad)
     {
         vidaActual += cantidad;
@@ -51,9 +65,13 @@ public class VidaJugador : MonoBehaviour
     {
         Debug.Log("El jugador ha muerto");
 
-        if (panelPerdiste != null)
-            panelPerdiste.SetActive(true);  // Mostrar el panel de "Perdiste"
+        Animator anim = GetComponent<Animator>();
+        if (anim != null)
+            anim.SetTrigger("Morir");
 
-        Time.timeScale = 0f;  // Pausar el juego
+        if (panelPerdiste != null)
+            panelPerdiste.SetActive(true);
+
+        Time.timeScale = 0f;
     }
 }
